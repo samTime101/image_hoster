@@ -21,11 +21,11 @@ const file = fileInput.files[0];
     }
     document.getElementById('uploadBtn').innerHTML = "Submitting"   
 
-    const repo = 'samTime101/image_hoster';
+    const repo = 'samTime101/image_database';
     const path = 'uploads/' + file.name;
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file);  
     const token = data;
     //from my old project
     const reader = new FileReader();
