@@ -1,8 +1,8 @@
 
 document.getElementById('uploadBtn').addEventListener('click', async () => {
-    var response = await fetch('./credentials/token.txt');
-    
-    var data = await response.text()
+    var response = await fetch('./api/token');
+    const { token } = await tokenResponse.json();
+    // var data = await response.text()
 /* brain rot code
 if (data) {
         alert(data);
@@ -26,7 +26,6 @@ const file = fileInput.files[0];
 
     const formData = new FormData();
     formData.append('file', file);  
-    const token = data;
     //from my old project
     const reader = new FileReader();
     reader.onloadend = async function() {
