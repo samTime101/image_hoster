@@ -1,19 +1,39 @@
+//          UPDATED ON JAN 31 5 07 PM
+//          SUPPORTS ALL USERS
+//          DONT KNOW WHY THE FUCK I MADE THIS
+
+
 var token;
-const repo = "samTime101/image_database";
-const path = "uploads/";
+var github_id;
+var github_repo;
+var repo_folder;
 var prev_count = 0;
 
 document.addEventListener("DOMContentLoaded", async () => {
   token = localStorage.getItem("token");
+  github_id = localStorage.getItem("github_id")
+  github_repo = localStorage.getItem("github_repo")
+  repo_folder = localStorage.getItem("repo_folder")
 
-  if (!token) {
-    token = prompt("Enter git token");
-    if (token) {
+  if (!token || !github_id || !github_repo || !repo_folder) {
+    github_id = prompt("Enter github username");
+    github_repo = prompt("Enter github target repo");
+    repo_folder = prompt("Enter foldername where u wanna save data");
+    token = prompt("Enter git token")
+
+    if (token && github_id && github_repo && repo_folder) {
       localStorage.setItem("token", token);
+      localStorage.setItem("github_id", github_id);
+      localStorage.setItem("repo_folder", repo_folder);
+      localStorage.setItem("github_repo", github_repo);
+
     }
   }
 
   token = localStorage.getItem("token");
+  github_repo = localStorage.getItem("github_repo");
+  github_id = localStorage.getItem("github_id");
+  repo_folder = localStorage.getItem("repo_folder")
 
   if (!token) {
     alert("please put correct git token bro");
@@ -23,6 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   fetch__contents();
 });
+
+
 
 //sharever code helped a lot in this part......
 function openPreviewWindow(url, file_name) {
@@ -59,9 +81,11 @@ function openPreviewWindow(url, file_name) {
   }
 }
 //upload garepaxi check garirahane ho , upto max attempts
+let attempt = 0;
 async function check_update() {
-  let attempt = 0;
-  const maxAttempts = 10;
+  const maxAttempts = 30;
+  const repo = `${github_id}/${github_repo}`;
+  const path = `${repo_folder}`;
   const response = await fetch(
     `https://api.github.com/repos/${repo}/contents/${path}`,
     {
@@ -75,21 +99,29 @@ async function check_update() {
   var data = await response.json();
 
   if (data.length > prev_count) {
+    document.getElementById("uploadBtn").innerHTML = "Send";
+    console.log(attempt)
+    attempt = 0
     fetch__contents();
   } else if (attempt < maxAttempts) {
     attempt++;
-    console.log(`fetching again :${attempt}`);
+    document.getElementById("uploadBtn").innerHTML = `Fetching: ${attempt}`;
+    console.log(`fetching again attempt: ${attempt} ${data.length} ${prev_count}`);
     setTimeout(check_update, 3000);
   } else {
     console.error("Timeout waiting for new file.");
+    attempt = 0;
   }
 }
 
 async function fetch__contents() {
-  if (!token) {
-    console.error("no token");
+  if (!token || !github_id || !github_repo || !repo_folder) {
+    console.error("Missing required values.");
     return;
   }
+
+  const repo = `${github_id}/${github_repo}`;
+  const path = `${repo_folder}`;
 
   try {
     const response = await fetch(
@@ -110,13 +142,14 @@ async function fetch__contents() {
     var data = await response.json();
     console.log(data);
     console.log(`${data.length}`);
+    console.log(attempt)
     prev_count = data.length;
     const contentsDiv = document.querySelector("#contents");
     contentsDiv.innerHTML = "";
 
     data.forEach((item) => {
       contentsDiv.innerHTML += `
-                <li aria-current="true" class="w-full px-4 py-2 border-b border-gray-200 rounded-t-lg dark:border-gray-600 cursor-pointer" 
+                <li aria-current="true" class="w-full px-4 py-2 border-b border-gray-200 rounded-t-lg dark:border-gray-600 cursor-pointer"
                     onclick="openPreviewWindow('${item.download_url}', '${item.name}')">
                     ${item.name}
                 </li>`;
@@ -138,8 +171,8 @@ document.getElementById("uploadBtn").addEventListener("click", async () => {
 
   document.getElementById("uploadBtn").innerHTML = "Submitting...";
 
-  const repo = "samTime101/image_database";
-  const path = "uploads/" + file.name;
+  const repo = `${github_id}/${github_repo}`;
+  const path = `${repo_folder}/${file.name}`;
   const reader = new FileReader();
 
   reader.onloadend = async function () {
